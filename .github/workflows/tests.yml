@@ -1,0 +1,62 @@
+name: Build and release
+
+on:
+  push:
+    branches: [master, "add_set_flag_on_update"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7]
+        db-backend: [postgres, sqlite]
+    services:
+      postgres:
+        image: postgres:9.6
+        env:
+          POSTGRES_DB: sqlalchemy_continuum_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432/tcp
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache Python
+        uses: actions/cache@v2.1.3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ matrix.db-backend }}-${{ github.sha }}
+
+      - name: Install python dependencies
+        shell: bash
+        env:
+          DB: ${{ matrix.db-backend }}
+        run: |
+          pip install wheel
+          pip install -e  ".[test]"
+
+      - name: Show python dependencies
+        shell: bash
+        run: pip freeze
+
+      - name: Run tests
+        shell: bash
+        env:
+          DB: ${{ matrix.db-backend }}
+        run: py.test
+

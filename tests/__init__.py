@@ -42,9 +42,9 @@ def log_sql(
 
 def get_dns_from_driver(driver):
     if driver == 'postgres':
-        return 'postgres://postgres@localhost/sqlalchemy_continuum_test'
+        return 'postgres://postgres:postgres@localhost:5432/sqlalchemy_continuum_test'
     elif driver == 'mysql':
-        return 'mysql+pymysql://travis@localhost/sqlalchemy_continuum_test'
+        return 'mysql+pymysql://mysql@localhost:3306/sqlalchemy_continuum_test'
     elif driver == 'sqlite':
         return 'sqlite:///:memory:'
     else:
