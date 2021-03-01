@@ -1,8 +1,8 @@
-name: Build and release
+name: Tests
 
 on:
   push:
-    branches: [master, "add_set_flag_on_update"]
+    branches: [master]
   pull_request:
     branches: [master]
 
