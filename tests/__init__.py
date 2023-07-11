@@ -7,7 +7,7 @@ import warnings
 import sqlalchemy as sa
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, column_property
+from sqlalchemy.orm import sessionmaker, column_property, close_all_sessions
 from sqlalchemy_continuum import (
     ClassNotVersioned,
     version_class,
@@ -42,9 +42,9 @@ def log_sql(
 
 def get_dns_from_driver(driver):
     if driver == 'postgres':
-        return 'postgres://postgres@localhost/sqlalchemy_continuum_test'
+        return 'postgresql://postgres:postgres@localhost/sqlalchemy_continuum_test'
     elif driver == 'mysql':
-        return 'mysql+pymysql://travis@localhost/sqlalchemy_continuum_test'
+        return 'mysql+pymysql://root@localhost/sqlalchemy_continuum_test'
     elif driver == 'sqlite':
         return 'sqlite:///:memory:'
     else:
@@ -130,7 +130,7 @@ class TestCase(object):
         QueryPool.queries = []
         versioning_manager.reset()
 
-        self.session.close_all()
+        close_all_sessions()
         self.session.expunge_all()
         self.drop_tables()
         self.engine.dispose()

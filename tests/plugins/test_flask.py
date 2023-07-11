@@ -1,11 +1,12 @@
 import os
 
 from flask import Flask, url_for
-from flask_login import LoginManager
+from flask_login import LoginManager, UserMixin, login_user
 from flask_sqlalchemy import SQLAlchemy, _SessionSignalEvents
 from flexmock import flexmock
 
 import sqlalchemy as sa
+from sqlalchemy.orm import close_all_sessions
 from sqlalchemy_continuum import (
     make_versioned, remove_versioning, versioning_manager
 )
@@ -59,24 +60,10 @@ class TestFlaskPlugin(TestCase):
         self.client = None
         self.app = None
 
-    def login(self, user):
-        """
-        Log in the user returned by :meth:`create_user`.
-
-        :returns: the logged in user
-        """
-        with self.client.session_transaction() as s:
-            s['_user_id'] = user.id
-        return user
-
-    def logout(self, user=None):
-        with self.client.session_transaction() as s:
-            s['_user_id'] = None
-
     def create_models(self):
         TestCase.create_models(self)
 
-        class User(self.Model):
+        class User(self.Model, UserMixin):
             __tablename__ = 'user'
             __versioned__ = {
                 'base_classes': (self.Model, )
@@ -114,7 +101,7 @@ class TestFlaskPlugin(TestCase):
         user = self.User(name=u'Rambo')
         self.session.add(user)
         self.session.commit()
-        self.login(user)
+        login_user(user)
         self.client.get(url_for('.test_simple_flush'))
 
         article = self.session.query(self.Article).first()
@@ -125,7 +112,7 @@ class TestFlaskPlugin(TestCase):
         user = self.User(name=u'Rambo')
         self.session.add(user)
         self.session.commit()
-        self.login(user)
+        login_user(user)
         self.client.get(url_for('.test_raw_sql_and_flush'))
         assert (
             self.session.query(versioning_manager.transaction_cls).count() == 2
@@ -248,7 +235,7 @@ class TestFlaskPluginWithFlaskSQLAlchemyExtension(object):
         remove_versioning()
         self.db.session.remove()
         self.db.drop_all()
-        self.db.session.close_all()
+        close_all_sessions()
         self.db.engine.dispose()
         self.context.pop()
         self.context = None
