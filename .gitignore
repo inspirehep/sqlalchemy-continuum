@@ -40,10 +40,3 @@ nosetests.xml
 
 # Unit test / coverage reports
 .cache
-
-#env
-.env*
-env*
-
-#Pycharm
-.idea
