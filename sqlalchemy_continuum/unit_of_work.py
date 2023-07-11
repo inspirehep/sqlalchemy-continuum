@@ -1,7 +1,6 @@
 from copy import copy
 
 import sqlalchemy as sa
-from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy_utils import get_primary_keys, identity
 from .operation import Operations
 from .utils import (
@@ -335,4 +334,3 @@ class UnitOfWork(object):
             except sa.orm.exc.ObjectDeletedError:
                 value = None
             setattr(version_obj, prop.key, value)
-            flag_modified(version_obj, prop.key)
