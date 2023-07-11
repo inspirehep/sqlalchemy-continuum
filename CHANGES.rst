@@ -3,6 +3,26 @@ Changelog
 
 Here you can see the full list of changes between each SQLAlchemy-Continuum release.
 
+1.3.14 (2023-01-04)
+^^^^^^^^^^^^^^^^^^^
+
+- Undo unneeded change to Flask-Login that breaks alternative IDs (#325, thanks to anthraxx)
+
+
+1.3.13 (2022-09-07)
+^^^^^^^^^^^^^^^^^^^
+
+- Fixes for Flask 2.2 and Flask-Login 0.6.2 (#288, thanks to AbdealiJK)
+- Allow changed_entities to work without TransactionChanges plugin (#268, thanks to TomGoBravo)
+- Fix Activity plugin for non-composite primary keys not named id (#210, thanks to dryobates)
+- Allow sync_trigger to pass arguments through to create_trigger (#273, thanks to nanvel)
+- Fix association tables on Oracle (#291, thanks to AbdealiJK)
+- Fix some deprecation warnings in SA 1.4 (#269, #277, #279, #300, #302, thanks to TomGoBravo, edhaz, and indiVar0508)
+
+1.3.12 (2022-01-18)
+^^^^^^^^^^^^^^^^^^^
+
+- Support SA 1.4
 
 1.3.11 (2020-05-24)
 ^^^^^^^^^^^^^^^^^^^

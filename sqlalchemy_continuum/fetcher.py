@@ -59,7 +59,7 @@ class VersionObjectFetcher(object):
             func = sa.func.max
 
         if alias is None:
-            alias = sa.orm.aliased(obj)
+            alias = sa.orm.aliased(obj.__class__)
             table = alias.__table__
             if hasattr(alias, 'c'):
                 attrs = alias.c
@@ -90,10 +90,21 @@ class VersionObjectFetcher(object):
             )
             .correlate(table)
         )
-        return query
+        try:
+            return query.scalar_subquery()
+        except AttributeError:  # SQLAlchemy < 1.4
+            return query.as_scalar()
 
     def _next_prev_query(self, obj, next_or_prev='next'):
         session = sa.orm.object_session(obj)
+
+        subquery = self._transaction_id_subquery(
+            obj, next_or_prev=next_or_prev
+        )
+        try:
+            subquery = subquery.scalar_subquery()
+        except AttributeError:  # SQLAlchemy < 1.4
+            subquery = subquery.as_scalar()
 
         return (
             session.query(obj.__class__)
@@ -102,11 +113,7 @@ class VersionObjectFetcher(object):
                     getattr(
                         obj.__class__,
                         tx_column_name(obj)
-                    )
-                    ==
-                    self._transaction_id_subquery(
-                        obj, next_or_prev=next_or_prev
-                    ),
+                    ) == subquery,
                     *parent_criteria(obj)
                 )
             )
@@ -117,7 +124,7 @@ class VersionObjectFetcher(object):
         Returns the query needed for fetching the index of this record relative
         to version history.
         """
-        alias = sa.orm.aliased(obj)
+        alias = sa.orm.aliased(obj.__class__)
 
         subquery = (
             sa.select([sa.func.count('1')], from_obj=[alias.__table__])

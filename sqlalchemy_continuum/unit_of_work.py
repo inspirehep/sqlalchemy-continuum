@@ -227,7 +227,7 @@ class UnitOfWork(object):
             return sa.select(
                 [sa.text('max_1')],
                 from_obj=[
-                    sa.sql.expression.alias(subquery, name='subquery')
+                    sa.sql.expression.alias(subquery.subquery() if hasattr(subquery, 'subquery') else subquery, name='subquery')
                 ]
             )
         return subquery
@@ -254,6 +254,11 @@ class UnitOfWork(object):
                     version_obj,
                     alias=sa.orm.aliased(class_.__table__)
                 )
+                try:
+                    subquery = subquery.scalar_subquery()
+                except AttributeError:  # SQLAlchemy < 1.4
+                    subquery = subquery.as_scalar()
+
                 query = (
                     session.query(class_.__table__)
                     .filter(
